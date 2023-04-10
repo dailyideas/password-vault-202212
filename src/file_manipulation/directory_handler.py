@@ -51,6 +51,7 @@ class DirectoryHandler:
         return file_name in self._files
 
     def write_to_file(self, file_name: str, data: bytes):
+        self._files.add(file_name)
         with open(os.path.join(self._directory, file_name), "wb") as f:
             f.write(data)
 

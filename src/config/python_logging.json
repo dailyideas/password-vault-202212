@@ -1,0 +1,37 @@
+{
+    "version": 1,
+    "disable_existing_loggers": "False",
+    "formatters": {
+        "default": {
+            "format": "%(asctime)s [%(levelname)s] %(message)s",
+            "datefmt": "%Y-%m-%dT%H:%M:%S"
+        }
+    },
+    "handlers": {
+        "null": {
+            "class": "logging.NullHandler",
+            "level": "CRITICAL",
+            "formatter": "default"
+        },
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+            "formatter": "default"
+        }
+    },
+    "loggers": {
+        "": {
+            "handlers": [
+                "null"
+            ],
+            "level": "CRITICAL"
+        },
+        "project": {
+            "handlers": [
+                "console"
+            ],
+            "level": "INFO",
+            "propagate": "True"
+        }
+    }
+}

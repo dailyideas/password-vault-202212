@@ -1,4 +1,3 @@
-import base64
 from collections import OrderedDict
 import datetime
 import hashlib
@@ -19,7 +18,7 @@ APP_DIRECTORY = pathlib.Path(SCRIPT_DIRECTORY).parent.absolute()
 SCRIPT_RELATIVE_DIRECTORY = os.path.relpath(SCRIPT_DIRECTORY, APP_DIRECTORY)
 ## import
 sys.path.insert(1, str(APP_DIRECTORY))
-from bytes_manipulation.dict_helper import DictHelper
+from util.dict_helper import DictHelper
 from file_manipulation.directory_handler_with_replication import (
     DirectoryHandlerWithReplication,
 )
@@ -30,9 +29,6 @@ from file_manipulation.directory_handler_with_replication import (
 #### #### #### ####
 class PasswordVault:
     STRING_ENCODING = "utf-8"
-    DEFAULT_AUX_PASSWORD_FILE_NAME = "password_vault_aux_password.txt"
-    AUX_PASSWORD_LENGTH = 8
-
     ACCOUNT_NAME_TAG = "account_name"
     ACCOUNT_MODIFICATION_DATE_TAG = "account_modification_date"
     ACCOUNT_UUID_TAG = "account_uuid"
@@ -41,20 +37,9 @@ class PasswordVault:
         self,
         directories: list,
         main_password: str,
-        aux_password_file_path: str = "",
+        aux_password: str = "",
     ):
-        self._aux_password_file_path = aux_password_file_path
-        if self._aux_password_file_path == "":
-            self._aux_password_file_path = os.path.join(
-                SCRIPT_DIRECTORY, self.DEFAULT_AUX_PASSWORD_FILE_NAME
-            )
         main_password_bytes = main_password.encode(self.STRING_ENCODING)
-        if os.path.isfile(self._aux_password_file_path) is True:
-            aux_password = open(self._aux_password_file_path, "r").read()
-        else:
-            aux_password = self._generate_aux_password()
-            open(self._aux_password_file_path, "w").write(aux_password)
-        assert len(aux_password) == self.AUX_PASSWORD_LENGTH
         aux_password_bytes = aux_password.encode(self.STRING_ENCODING)
         key = hashlib.sha256(main_password_bytes + aux_password_bytes).digest()
         self._directory_handler = DirectoryHandlerWithReplication(
@@ -104,30 +89,19 @@ class PasswordVault:
             }
         )
 
-    def change_password(self, new_main_password: str):
+    def change_password(
+        self, new_main_password: str, new_aux_password: str = ""
+    ):
         new_main_password_bytes = new_main_password.encode(
             self.STRING_ENCODING
         )
-        aux_password = self._generate_aux_password()
-        aux_password_bytes = aux_password.encode(self.STRING_ENCODING)
-        aux_password_file_future_path = (
-            self._aux_password_file_path + ".future"
-        )
-        open(aux_password_file_future_path, "w").write(aux_password)
+        new_aux_password_bytes = new_aux_password.encode(self.STRING_ENCODING)
         new_key = hashlib.sha256(
-            new_main_password_bytes + aux_password_bytes
+            new_main_password_bytes + new_aux_password_bytes
         ).digest()
         self._directory_handler.change_key(new_key=new_key)
-        os.replace(aux_password_file_future_path, self._aux_password_file_path)
 
     def _assert_account_exists(self, account_name: str):
         assert (
             self._directory_handler.file_exists(file_name=account_name) is True
         ), f"Account name \"{account_name}\" does not exist"
-
-    @classmethod
-    def _generate_aux_password(cls) -> str:
-        assert cls.AUX_PASSWORD_LENGTH % 4 == 0
-        return base64.b64encode(
-            os.urandom(cls.AUX_PASSWORD_LENGTH // 4 * 3)
-        ).decode(cls.STRING_ENCODING)
