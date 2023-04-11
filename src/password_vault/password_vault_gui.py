@@ -397,7 +397,7 @@ class PasswordVaultGui:
             metadata_directory = os.path.normpath(
                 tkinter.filedialog.askdirectory(
                     parent=self._root,
-                    initialdir=os.path.expanduser("~"),
+                    initialdir=os.path.expanduser(metadata_directory),
                     title="Directory of \"metadata.json\"",
                 )
             )

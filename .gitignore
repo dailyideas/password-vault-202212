@@ -5,7 +5,10 @@
 .pytest_cache/
 .tmp/
 __pycache__/
+build/
 caches/
+dist/
+exports/
 logs/
 tmp/
 
