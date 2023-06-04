@@ -891,9 +891,9 @@ class PasswordVaultGui:
                     "Updated account and changed account name from "
                     f"\"{account_name}\" to \"{new_account_name}\""
                 )
-            return FsmState.MAIN_MENU
+            return FsmState.SEARCH_ACCOUNT
         elif command == "cancel":
-            return FsmState.MAIN_MENU
+            return FsmState.SEARCH_ACCOUNT
         elif command == "delete":
             r = tkinter.messagebox.askyesno(
                 title="Delete Account",
@@ -906,7 +906,7 @@ class PasswordVaultGui:
                 logger.info(f"Deleted account:\"{account_name}\"")
             except ValueError:
                 logger.warning(f"Failed to delete account: \"{account_name}\"")
-            return FsmState.MAIN_MENU
+            return FsmState.SEARCH_ACCOUNT
         logger.error("Unknown command")
         return FsmState.EXIT
 

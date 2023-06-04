@@ -70,8 +70,11 @@ class PasswordVault:
         )
 
     def delete_account(self, account_name: str):
-        self._assert_account_exists(account_name=account_name)
-        self._directory_handler.delete_file(file_name=account_name)
+        try:
+            self._assert_account_exists(account_name=account_name)
+            self._directory_handler.delete_file(file_name=account_name)
+        except AssertionError:
+            pass
 
     def get_account(self, account_name: str) -> OrderedDict:
         self._assert_account_exists(account_name=account_name)
