@@ -7,6 +7,7 @@ import json
 import os
 import pathlib
 import sys
+import threading
 import time
 import tkinter as tk
 import tkinter.font
@@ -63,6 +64,7 @@ class PasswordVaultGui:
     STRING_ENCODING = "utf-8"
     CONSOLE_MAX_LINES = 200
     ACCOUNT_NAMES_VIEW_N_CANDIDATES = 64
+    MAX_IDLING_TIME = 300
 
     def __init__(self):
         self._metadata_directory: str = ""
@@ -78,10 +80,25 @@ class PasswordVaultGui:
 
     def loop(self):
         is_exited = False
+        prev_fsm_state = FsmState.ENTRANCE
+        prev_fsm_state_start_time = time.time()
 
         def on_closing_window():
             nonlocal is_exited
             is_exited = True
+
+        def check_and_handle_idling():
+            nonlocal prev_fsm_state, prev_fsm_state_start_time
+            current_state = self._fsm.current_state
+            if current_state == prev_fsm_state:
+                if (
+                    time.time() - prev_fsm_state_start_time
+                    > self.MAX_IDLING_TIME
+                ):
+                    on_closing_window()
+            else:
+                prev_fsm_state = current_state
+                prev_fsm_state_start_time = time.time()
 
         self._root.protocol("WM_DELETE_WINDOW", on_closing_window)
         try:
@@ -89,6 +106,7 @@ class PasswordVaultGui:
                 is_exited = self._fsm.update()
                 self._root.update_idletasks()
                 self._root.update()
+                check_and_handle_idling()
         except Exception as e:
             logger.info("{}: {}".format(type(e).__name__, e))
             traceback.print_exc()
