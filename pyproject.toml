@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+
+[project]
+dependencies = ["pycryptodome==3.16.0", "rapidfuzz==2.13.7"]
+dynamic = ["version"]
+name = "password-vault-202212"
+readme = "README.md"
+requires-python = ">=3.10"
+# version = "0.1.0"
+
+[project.optional-dependencies]
+dev = ["black"]
+
+[tool.black]
+line-length = 79
+skip-string-normalization = true
+target-version = ["py310"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools_scm]
+local_scheme = "no-local-version"
+write_to = ".setuptools_scm.py"

@@ -3,30 +3,13 @@ import binascii
 import dataclasses
 import datetime
 import os
-import pathlib
-import sys
 
-
-#### #### #### ####
-#### global
-#### #### #### ####
-## constant
-SCRIPT_NAME = os.path.basename(__file__).split(".")[0]
-SCRIPT_PATH = os.path.abspath(__file__)
-SCRIPT_DIRECTORY = os.path.dirname(SCRIPT_PATH)
-APP_DIRECTORY = pathlib.Path(SCRIPT_DIRECTORY).parent.absolute()
-SCRIPT_RELATIVE_DIRECTORY = os.path.relpath(SCRIPT_DIRECTORY, APP_DIRECTORY)
-## import
-sys.path.insert(1, str(APP_DIRECTORY))
 from data_encryption.cipher_helper import CipherHelper
 from file_manipulation.directory_handler_with_file_hash import (
     DirectoryHandlerWithFileHash,
 )
 
 
-#### #### #### ####
-#### class
-#### #### #### ####
 @dataclasses.dataclass
 class DirectoryInfo:
     BYTE_ORDER = "big"

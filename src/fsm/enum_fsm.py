@@ -2,9 +2,6 @@ from enum import Enum
 from typing import Callable, Optional
 
 
-#### #### #### ####
-#### class
-#### #### #### ####
 class EnumFsm:
     def __init__(
         self,
