@@ -36,6 +36,8 @@ class FsmState(Enum):
 
 
 class PasswordVaultGui:
+    CACHES_DIRECTORY = "caches"
+    CACHE_FILE_NAME = "password_vault_gui.json"
     METADATA_FILE_NAME = "metadata.json"
     DATA_REPLICA_DIRECTORIES_FIELD = "directories"
     AUX_PASSWORD_FIELD = "aux_password"
@@ -383,25 +385,30 @@ class PasswordVaultGui:
         return FsmState.SELECT_METADATA_DIRECTORY
 
     def _select_metadata_directory_state_stay_callback(self) -> FsmState:
-        metadata_directory = "data"
-        if not os.path.isdir(metadata_directory):
-            self._console_print(
-                text=(
-                    "Cannot find meterdata directory in the default location, "
-                    "please specify the directory."
-                )
-            )
+        cache_file_path = os.path.join(
+            self.CACHES_DIRECTORY, self.CACHE_FILE_NAME
+        )
+        caches = {}
+        if os.path.isfile(cache_file_path):
+            caches = json.load(open(cache_file_path, "r"))
+        if not "metadata_directory" in caches or not os.path.isdir(
+            caches["metadata_directory"]
+        ):
+            self._console_print(text="please specify the metadata directory.")
             metadata_directory = os.path.normpath(
                 tkinter.filedialog.askdirectory(
                     parent=self._root,
-                    initialdir=os.path.expanduser(metadata_directory),
-                    title="Directory of \"metadata.json\"",
+                    initialdir=".",
+                    title="Directory for storing \"metadata.json\"",
                 )
             )
+            caches["metadata_directory"] = metadata_directory
+        os.makedirs(self.CACHES_DIRECTORY, exist_ok=True)
+        json.dump(caches, open(cache_file_path, "w"))
         self._console_print(
-            text="Metadata directory: {}".format(metadata_directory)
+            text="Metadata directory: {}".format(caches["metadata_directory"])
         )
-        self._metadata_directory = metadata_directory
+        self._metadata_directory = caches["metadata_directory"]
         self._metadata_file_path = os.path.join(
             self._metadata_directory, "metadata.json"
         )

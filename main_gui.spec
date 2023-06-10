@@ -5,10 +5,10 @@ block_cipher = None
 
 
 a = Analysis(
-    ['../src/main_gui.py'],
+    ['main_gui.py'],
     pathex=[],
     binaries=[],
-    datas=[('../src/config/python_logging.json', 'config/')],
+    datas=[('configs/python_logging.json', 'configs/')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -39,7 +39,7 @@ exe = EXE(
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
-    entitlements_file=None,
+    entitlements_file=None
 )
 
 coll = COLLECT(exe,

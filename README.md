@@ -20,7 +20,8 @@ This password vault utilizes the `ChaCha20` module provided by [PyCryptodome](ht
 1. At the project directory, run `python src\main_gui.py`.
 
 ## Run the app via executable
-Todo...
+1. Download the zip file from the release page.
+1. Unzip and run `password-vault\password-vault.exe`.
 
 ## GUI explanation
 1. At the directory where the executable is located, if there is a sub-directory named "data/", the password vault will treat it as the location of storing the metadata. If the sub-directory does not exist, it will prompt to ask for the directory where "metadata.json" is or should be stored.
