@@ -7,10 +7,10 @@ dynamic = ["version"]
 name = "password-vault-202212"
 readme = "README.md"
 requires-python = ">=3.10"
-# version = "0.1.0"
 
 [project.optional-dependencies]
 dev = ["black"]
+prod = ["pyinstaller==5.12.0"]
 
 [tool.black]
 line-length = 79
