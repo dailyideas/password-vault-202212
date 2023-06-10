@@ -2,9 +2,6 @@ from collections import OrderedDict
 import json
 
 
-#### #### #### ####
-#### class
-#### #### #### ####
 class DictHelper:
     STRING_ENCODING = "utf-8"
 

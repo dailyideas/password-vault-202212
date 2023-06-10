@@ -4,6 +4,7 @@
 .logs/
 .pytest_cache/
 .tmp/
+*.egg-info/
 __pycache__/
 build/
 caches/
@@ -15,3 +16,5 @@ tmp/
 /.env
 /.venv/
 /.vscode/
+/.setuptools_scm.py
+/data/

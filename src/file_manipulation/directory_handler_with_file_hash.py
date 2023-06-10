@@ -1,26 +1,9 @@
 import hashlib
 import os
-import pathlib
-import sys
 
-
-#### #### #### ####
-#### global
-#### #### #### ####
-## constant
-SCRIPT_NAME = os.path.basename(__file__).split(".")[0]
-SCRIPT_PATH = os.path.abspath(__file__)
-SCRIPT_DIRECTORY = os.path.dirname(SCRIPT_PATH)
-APP_DIRECTORY = pathlib.Path(SCRIPT_DIRECTORY).parent.absolute()
-SCRIPT_RELATIVE_DIRECTORY = os.path.relpath(SCRIPT_DIRECTORY, APP_DIRECTORY)
-## import
-sys.path.insert(1, str(APP_DIRECTORY))
 from file_manipulation.directory_handler import DirectoryHandler
 
 
-#### #### #### ####
-#### class
-#### #### #### ####
 class DirectoryHandlerWithFileHash(DirectoryHandler):
     HASHES_SUBDIRECTORY = ".hashes"
     HASH_FILE_EXTENSION = "hash"

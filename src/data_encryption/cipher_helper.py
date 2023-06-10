@@ -1,24 +1,8 @@
 from __future__ import annotations
-import os
-import pathlib
 
 from Crypto.Cipher import ChaCha20
 
 
-#### #### #### ####
-#### global
-#### #### #### ####
-## constant
-SCRIPT_NAME = os.path.basename(__file__).split(".")[0]
-SCRIPT_PATH = os.path.abspath(__file__)
-SCRIPT_DIRECTORY = os.path.dirname(SCRIPT_PATH)
-APP_DIRECTORY = pathlib.Path(SCRIPT_DIRECTORY).parent.absolute()
-SCRIPT_RELATIVE_DIRECTORY = os.path.relpath(SCRIPT_DIRECTORY, APP_DIRECTORY)
-
-
-#### #### #### ####
-#### class
-#### #### #### ####
 class CipherHelper:
     KEY_NUM_BYTES = 32
     NONCE_NUM_BYTES = 12

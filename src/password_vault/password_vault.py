@@ -1,32 +1,14 @@
 from collections import OrderedDict
 import datetime
 import hashlib
-import os
-import pathlib
-import sys
 import uuid
 
-
-#### #### #### ####
-#### global
-#### #### #### ####
-## constant
-SCRIPT_NAME = os.path.basename(__file__).split(".")[0]
-SCRIPT_PATH = os.path.abspath(__file__)
-SCRIPT_DIRECTORY = os.path.dirname(SCRIPT_PATH)
-APP_DIRECTORY = pathlib.Path(SCRIPT_DIRECTORY).parent.absolute()
-SCRIPT_RELATIVE_DIRECTORY = os.path.relpath(SCRIPT_DIRECTORY, APP_DIRECTORY)
-## import
-sys.path.insert(1, str(APP_DIRECTORY))
 from util.dict_helper import DictHelper
 from file_manipulation.directory_handler_with_replication import (
     DirectoryHandlerWithReplication,
 )
 
 
-#### #### #### ####
-#### class
-#### #### #### ####
 class PasswordVault:
     STRING_ENCODING = "utf-8"
     ACCOUNT_NAME_TAG = "account_name"

@@ -4,10 +4,8 @@ import enum
 from enum import Enum
 from functools import partial
 import json
+import logging
 import os
-import pathlib
-import sys
-import threading
 import time
 import tkinter as tk
 import tkinter.font
@@ -17,32 +15,13 @@ import tkinter.scrolledtext
 import tkinter.simpledialog
 import traceback
 
-
-#### #### #### ####
-#### global
-#### #### #### ####
-## constant
-SCRIPT_NAME = os.path.basename(__file__).split(".")[0]
-SCRIPT_PATH = os.path.abspath(__file__)
-SCRIPT_DIRECTORY = os.path.dirname(SCRIPT_PATH)
-APP_DIRECTORY = pathlib.Path(SCRIPT_DIRECTORY).parent.absolute()
-SCRIPT_RELATIVE_DIRECTORY = os.path.relpath(SCRIPT_DIRECTORY, APP_DIRECTORY)
-## import
-sys.path.insert(1, str(APP_DIRECTORY))
 from fsm.enum_fsm import EnumFsm
 from password_vault.password_vault import PasswordVault
-from util.script_helper import ScriptHelper
-
-## logger
-logger = ScriptHelper.get_script_logger(
-    script_relative_directory=SCRIPT_RELATIVE_DIRECTORY,
-    script_name=SCRIPT_NAME,
-)
 
 
-#### #### #### ####
-#### class
-#### #### #### ####
+logger = logging.getLogger(os.path.abspath(__file__))
+
+
 class FsmState(Enum):
     ENTRANCE = enum.auto()
     SELECT_METADATA_DIRECTORY = enum.auto()
@@ -404,7 +383,7 @@ class PasswordVaultGui:
         return FsmState.SELECT_METADATA_DIRECTORY
 
     def _select_metadata_directory_state_stay_callback(self) -> FsmState:
-        metadata_directory = os.path.join(APP_DIRECTORY, "data")
+        metadata_directory = "data"
         if not os.path.isdir(metadata_directory):
             self._console_print(
                 text=(
