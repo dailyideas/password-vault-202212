@@ -30,15 +30,14 @@ class DirectoryHandlerWithFileHash(DirectoryHandler):
         super().write_to_file(file_name=file_name, data=data)
 
     def read_from_file(self, file_name: str) -> bytes:
-        self._assert_file_exists(file_name=file_name)
+        self._ensure_file_exists(file_name=file_name)
         data = super().read_from_file(file_name=file_name)
-        assert self._check_file_hash(
-            file_name=file_name, data=data
-        ), "File hash does not match."
+        if not self._check_file_hash(file_name=file_name, data=data):
+            raise ValueError("File hash does not match")
         return data
 
     def get_file_hash(self, file_name: str) -> bytes:
-        self._assert_file_exists(file_name)
+        self._ensure_file_exists(file_name)
         with open(
             os.path.join(
                 self._directory,
@@ -50,7 +49,7 @@ class DirectoryHandlerWithFileHash(DirectoryHandler):
             return f.read()
 
     def delete_file(self, file_name: str):
-        self._assert_file_exists(file_name=file_name)
+        self._ensure_file_exists(file_name=file_name)
         super().delete_file(file_name=file_name)
         self._delete_hash(file_name=file_name)
 

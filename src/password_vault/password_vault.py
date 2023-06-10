@@ -71,13 +71,13 @@ class PasswordVault:
 
     def delete_account(self, account_name: str):
         try:
-            self._assert_account_exists(account_name=account_name)
+            self._ensure_account_exists(account_name=account_name)
             self._directory_handler.delete_file(file_name=account_name)
-        except AssertionError:
+        except FileNotFoundError:
             pass
 
     def get_account(self, account_name: str) -> OrderedDict:
-        self._assert_account_exists(account_name=account_name)
+        self._ensure_account_exists(account_name=account_name)
         details_serialized = self._directory_handler.read_from_file(
             file_name=account_name
         )
@@ -104,7 +104,8 @@ class PasswordVault:
         ).digest()
         self._directory_handler.change_key(new_key=new_key)
 
-    def _assert_account_exists(self, account_name: str):
-        assert (
-            self._directory_handler.file_exists(file_name=account_name) is True
-        ), f"Account name \"{account_name}\" does not exist"
+    def _ensure_account_exists(self, account_name: str):
+        if not self._directory_handler.file_exists(file_name=account_name):
+            raise FileNotFoundError(
+                f"Account name \"{account_name}\" does not exist"
+            )
