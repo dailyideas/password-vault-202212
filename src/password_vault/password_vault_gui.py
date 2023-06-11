@@ -19,7 +19,7 @@ from fsm.enum_fsm import EnumFsm
 from password_vault.password_vault import PasswordVault
 
 
-logger = logging.getLogger(os.path.abspath(__file__))
+logger = logging.getLogger(__name__)
 
 
 class FsmState(Enum):
