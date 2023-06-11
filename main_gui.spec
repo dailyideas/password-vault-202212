@@ -8,7 +8,7 @@ a = Analysis(
     ['main_gui.py'],
     pathex=[],
     binaries=[],
-    datas=[('configs/python_logging.json', 'configs/')],
+    datas=[],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
