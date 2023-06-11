@@ -1,5 +1,5 @@
-import base64
 from collections import OrderedDict
+import datetime
 import enum
 from enum import Enum
 from functools import partial
@@ -24,32 +24,31 @@ logger = logging.getLogger(__name__)
 
 class FsmState(Enum):
     ENTRANCE = enum.auto()
-    SELECT_METADATA_DIRECTORY = enum.auto()
+    LOAD_METADATA = enum.auto()
     MANAGE_DATA_REPLICA_DIRECTORIES = enum.auto()
     ADD_DATA_REPLICA_DIRECTORY = enum.auto()
     DELETE_DATA_REPLICA_DIRECTORY = enum.auto()
     ASK_MAIN_PASSWORD = enum.auto()
     MAIN_MENU = enum.auto()
     SEARCH_ACCOUNT = enum.auto()
+    CHANGE_PASSWORD = enum.auto()
     MANAGE_ACCOUNT = enum.auto()
     EXIT = enum.auto()
 
 
 class PasswordVaultGui:
     CACHES_DIRECTORY = "caches"
-    CACHE_FILE_NAME = "password_vault_gui.json"
     METADATA_FILE_NAME = "metadata.json"
     DATA_REPLICA_DIRECTORIES_FIELD = "directories"
-    AUX_PASSWORD_FIELD = "aux_password"
-    AUX_PASSWORD_LENGTH = 8
     STRING_ENCODING = "utf-8"
     CONSOLE_MAX_LINES = 200
     ACCOUNT_NAMES_VIEW_N_CANDIDATES = 64
     MAX_IDLING_TIME = 300
 
     def __init__(self):
-        self._metadata_directory: str = ""
-        self._metadata_file_path: str = ""
+        self._metadata_file_path: str = os.path.join(
+            self.CACHES_DIRECTORY, self.METADATA_FILE_NAME
+        )
         self._metadata: dict = {}
         self._intra_state_variables: dict = {}
         self._inter_state_variables: dict = {}
@@ -106,8 +105,8 @@ class PasswordVaultGui:
             stay_callback=self._entrance_state_stay_callback,
         )
         self._fsm.add_state(
-            state=FsmState.SELECT_METADATA_DIRECTORY,
-            stay_callback=self._select_metadata_directory_state_stay_callback,
+            state=FsmState.LOAD_METADATA,
+            stay_callback=self._load_metadata_state_stay_callback,
         )
         self._fsm.add_state(
             state=FsmState.MANAGE_DATA_REPLICA_DIRECTORIES,
@@ -140,6 +139,10 @@ class PasswordVaultGui:
             enter_callback=self._search_accounts_state_enter_callback,
             stay_callback=self._search_accounts_state_stay_callback,
             exit_callback=self._search_accounts_state_exit_callback,
+        )
+        self._fsm.add_state(
+            state=FsmState.CHANGE_PASSWORD,
+            stay_callback=self._change_password_state_stay_callback,
         )
         self._fsm.add_state(
             state=FsmState.MANAGE_ACCOUNT,
@@ -382,53 +385,14 @@ class PasswordVaultGui:
 
     def _entrance_state_stay_callback(self) -> FsmState:
         self._console_print(text="Welcome to the password vault.")
-        return FsmState.SELECT_METADATA_DIRECTORY
+        return FsmState.LOAD_METADATA
 
-    def _select_metadata_directory_state_stay_callback(self) -> FsmState:
-        cache_file_path = os.path.join(
-            self.CACHES_DIRECTORY, self.CACHE_FILE_NAME
-        )
-        caches = {}
-        if os.path.isfile(cache_file_path):
-            caches = json.load(open(cache_file_path, "r"))
-        if not "metadata_directory" in caches or not os.path.isdir(
-            caches["metadata_directory"]
-        ):
-            self._console_print(text="please specify the metadata directory.")
-            metadata_directory = os.path.normpath(
-                tkinter.filedialog.askdirectory(
-                    parent=self._root,
-                    initialdir=".",
-                    title="Directory for storing \"metadata.json\"",
-                )
-            )
-            caches["metadata_directory"] = metadata_directory
-        os.makedirs(self.CACHES_DIRECTORY, exist_ok=True)
-        json.dump(caches, open(cache_file_path, "w"))
-        self._console_print(
-            text="Metadata directory: {}".format(caches["metadata_directory"])
-        )
-        self._metadata_directory = caches["metadata_directory"]
-        self._metadata_file_path = os.path.join(
-            self._metadata_directory, "metadata.json"
-        )
+    def _load_metadata_state_stay_callback(self) -> FsmState:
         if os.path.isfile(self._metadata_file_path):
             self._metadata = json.load(open(self._metadata_file_path, "r"))
         else:
-            self._metadata = {
-                self.DATA_REPLICA_DIRECTORIES_FIELD: [],
-                self.AUX_PASSWORD_FIELD: self._generate_aux_password(),
-            }
+            self._metadata = {self.DATA_REPLICA_DIRECTORIES_FIELD: []}
             self._save_metadata()
-            self._console_print(
-                "Your auxiliary password is "
-                f"\"{self._metadata[self.AUX_PASSWORD_FIELD]}\". "
-                "It is stored in the \"metadata.json\" file."
-                "The password vault can only be decrypted by providing both "
-                "the main password and the auxiliary password. You should "
-                "copy and save the auxiliary password in multiple places. "
-                "If it is lost, you will lose access to this password vault. "
-            )
         return FsmState.MANAGE_DATA_REPLICA_DIRECTORIES
 
     def _manage_data_replica_directories_state_enter_callback(self):
@@ -504,7 +468,7 @@ class PasswordVaultGui:
         return FsmState.MANAGE_DATA_REPLICA_DIRECTORIES
 
     def _delete_data_replica_directory_state_enter_callback(self):
-        self._console_print("Enter the index of the directory to delete it")
+        self._console_print("Enter the index of the directory to delete it.")
 
     def _delete_data_replica_directory_state_stay_callback(self) -> FsmState:
         command = self._intra_state_variables.pop("confirmed_input", None)
@@ -539,13 +503,13 @@ class PasswordVaultGui:
         if pw is None or pw == "":
             self._console_print("Password cannot be empty.")
             return FsmState.EXIT
+        logger.info("Wait until the password vault is initialized.")
         try:
             self._password_vault = PasswordVault(
                 directories=self._metadata[
                     self.DATA_REPLICA_DIRECTORIES_FIELD
                 ],
                 main_password=pw,
-                aux_password=self._metadata[self.AUX_PASSWORD_FIELD],
             )
         except ValueError as e:
             self._console_print(text=str(e))
@@ -558,8 +522,8 @@ class PasswordVaultGui:
         self._console_print(
             "Choose an operation:\n"
             "1) Search to add / delete / modify / view an account\n"
-            "2) Change password (Not operable yet)\n"
-            "Passing an empty input has the same effect as selecting option 1"
+            "2) Change password\n"
+            "Passing an empty input has the same effect as selecting option 1."
         )
         self._configure_common_buttons(
             texts=["Search", "Change Password", ""],
@@ -574,7 +538,7 @@ class PasswordVaultGui:
             elif command == "2":
                 command = "change password"
             else:
-                self._console_print("Invalid input: \"{}\"".format(command))
+                self._console_print("Invalid input: \"{}\".".format(command))
                 return FsmState.MAIN_MENU
         else:
             command = self._intra_state_variables.pop(
@@ -582,6 +546,8 @@ class PasswordVaultGui:
             )
         if command == "search":
             return FsmState.SEARCH_ACCOUNT
+        elif command == "change password":
+            return FsmState.CHANGE_PASSWORD
         return FsmState.MAIN_MENU
 
     def _main_menu_state_exit_callback(self):
@@ -648,6 +614,43 @@ class PasswordVaultGui:
 
     def _search_accounts_state_exit_callback(self):
         self._title_label.config(text="")
+
+    def _change_password_state_stay_callback(self) -> FsmState:
+        self._console_print(
+            "Select the directory for storing the the archive of the existing password vault."
+        )
+        archive_directory = tkinter.filedialog.askdirectory(
+            parent=self._root,
+            initialdir=".",
+            title="Directory of the archive",
+        )
+        if archive_directory == "":
+            self._console_print(
+                "Archive of the existing password vault will NOT be created."
+            )
+        else:
+            current_datetime_str = datetime.datetime.now().strftime(
+                "%Y%m%d_%H%M%S"
+            )
+            archive_file_name = f"password_vault_{current_datetime_str}.zip"
+            archive_file_path = os.path.join(
+                archive_directory, archive_file_name
+            )
+            self._password_vault.create_archive(
+                archive_file_path=archive_file_path
+            )
+            self._console_print(
+                "Archive of the existing password vault created."
+            )
+        pw = tkinter.simpledialog.askstring(
+            "New Password", "Enter the new password:", show="*"
+        )
+        if pw is None or pw == "":
+            self._console_print("Password cannot be empty.")
+            return FsmState.MAIN_MENU
+        self._password_vault.change_password(new_main_password=pw)
+        self._console_print("Password changed successfully.")
+        return FsmState.MAIN_MENU
 
     def _manage_account_state_enter_callback(self):
         def on_delete_row(
@@ -972,10 +975,3 @@ class PasswordVaultGui:
         json.dump(
             self._metadata, open(self._metadata_file_path, "w"), indent=4
         )
-
-    @classmethod
-    def _generate_aux_password(cls) -> str:
-        assert cls.AUX_PASSWORD_LENGTH % 4 == 0
-        return base64.b64encode(
-            os.urandom(cls.AUX_PASSWORD_LENGTH // 4 * 3)
-        ).decode(cls.STRING_ENCODING)

@@ -1,4 +1,5 @@
 import hashlib
+import shutil
 import time
 
 from file_manipulation.directory_handler import DirectoryHandler
@@ -139,6 +140,15 @@ class DirectoryHandlerWithReplication:
     ) -> list:
         return self._directory_handlers[0].search_file_name(
             target_name=target_name, n_candidates=n_candidates
+        )
+
+    def create_archive(self, archive_file_path: str):
+        assert archive_file_path.endswith(".zip")
+        archive_file_path = archive_file_path.removesuffix(".zip")
+        shutil.make_archive(
+            base_name=archive_file_path,
+            format="zip",
+            root_dir=self._directories[0],
         )
 
     def _generate_replica_id(self) -> bytes:

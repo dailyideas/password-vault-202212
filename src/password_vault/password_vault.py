@@ -15,15 +15,9 @@ class PasswordVault:
     ACCOUNT_MODIFICATION_DATE_TAG = "account_modification_date"
     ACCOUNT_UUID_TAG = "account_uuid"
 
-    def __init__(
-        self,
-        directories: list,
-        main_password: str,
-        aux_password: str = "",
-    ):
+    def __init__(self, directories: list, main_password: str):
         main_password_bytes = main_password.encode(self.STRING_ENCODING)
-        aux_password_bytes = aux_password.encode(self.STRING_ENCODING)
-        key = hashlib.sha256(main_password_bytes + aux_password_bytes).digest()
+        key = hashlib.sha256(main_password_bytes).digest()
         self._directory_handler = DirectoryHandlerWithReplication(
             directories=directories, key=key
         )
@@ -74,17 +68,17 @@ class PasswordVault:
             }
         )
 
-    def change_password(
-        self, new_main_password: str, new_aux_password: str = ""
-    ):
+    def change_password(self, new_main_password: str):
         new_main_password_bytes = new_main_password.encode(
             self.STRING_ENCODING
         )
-        new_aux_password_bytes = new_aux_password.encode(self.STRING_ENCODING)
-        new_key = hashlib.sha256(
-            new_main_password_bytes + new_aux_password_bytes
-        ).digest()
+        new_key = hashlib.sha256(new_main_password_bytes).digest()
         self._directory_handler.change_key(new_key=new_key)
+
+    def create_archive(self, archive_file_path: str):
+        self._directory_handler.create_archive(
+            archive_file_path=archive_file_path
+        )
 
     def _ensure_account_exists(self, account_name: str):
         if not self._directory_handler.file_exists(file_name=account_name):
