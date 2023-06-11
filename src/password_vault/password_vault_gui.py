@@ -53,6 +53,8 @@ class PasswordVaultGui:
         self._intra_state_variables: dict = {}
         self._inter_state_variables: dict = {}
 
+        os.makedirs(self.CACHES_DIRECTORY, exist_ok=True)
+
         self._is_fsm_ready: bool = False
         self._init_fsm()
         self._is_tkinter_ready: bool = False
