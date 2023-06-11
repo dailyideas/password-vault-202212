@@ -41,12 +41,12 @@ class DirectoryHandler:
             f.write(data)
 
     def read_from_file(self, file_name: str) -> bytes:
-        self._assert_file_exists(file_name)
+        self._ensure_file_exists(file_name)
         with open(os.path.join(self._directory, file_name), "rb") as f:
             return f.read()
 
     def delete_file(self, file_name: str):
-        self._assert_file_exists(file_name)
+        self._ensure_file_exists(file_name)
         fpath = os.path.join(self._directory, file_name)
         os.remove(fpath)
         self._files.remove(file_name)
@@ -98,5 +98,6 @@ class DirectoryHandler:
         candidates.sort(key=lambda x: x[1], reverse=True)
         return [i[0] for i in candidates]
 
-    def _assert_file_exists(self, file_name: str):
-        assert self.file_exists(file_name), f"File {file_name} does not exist"
+    def _ensure_file_exists(self, file_name: str):
+        if not self.file_exists(file_name):
+            raise FileNotFoundError(f"File {file_name} does not exist")

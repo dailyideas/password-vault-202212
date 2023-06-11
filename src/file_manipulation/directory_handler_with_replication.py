@@ -57,13 +57,13 @@ class DirectoryHandlerWithReplication:
         for handler in self._directory_handlers:
             try:
                 data = handler.read_from_file(file_name=file_name)
-            except AssertionError:
+            except FileNotFoundError | ValueError:
                 problematic_handlers.append(handler)
                 continue
             else:
                 break
         if data is None:
-            raise AssertionError(
+            raise FileNotFoundError(
                 f"File {file_name} is not found/invalid in all directories"
             )
         for handler in problematic_handlers:
@@ -74,7 +74,7 @@ class DirectoryHandlerWithReplication:
         for handler in self._directory_handlers:
             try:
                 handler.delete_file(file_name=file_name)
-            except AssertionError:
+            except FileNotFoundError:
                 continue
 
     def cleanup(self):

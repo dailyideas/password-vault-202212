@@ -142,9 +142,8 @@ class DirectoryHandlerWithEncryption(DirectoryHandlerWithFileHash):
         data = CipherHelper.unpack_and_decrypt(
             packed_data=data_encrypted, key=self._key
         )
-        assert self._check_file_hash(
-            file_name=file_name, data=data
-        ), "File hash does not match."
+        if not self._check_file_hash(file_name=file_name, data=data):
+            raise ValueError("File hash does not match")
         return data
 
     def change_key(self, new_key: bytes):
@@ -157,7 +156,7 @@ class DirectoryHandlerWithEncryption(DirectoryHandlerWithFileHash):
         for file_name in files_name:
             try:
                 data = self.read_from_file(file_name=file_name)
-            except AssertionError:
+            except FileNotFoundError | ValueError:
                 self.delete_file(file_name=file_name)
                 continue
             data_encrypted = CipherHelper.encrypt_and_pack(
@@ -245,8 +244,8 @@ class DirectoryHandlerWithEncryption(DirectoryHandlerWithFileHash):
 
     @classmethod
     def _move_files(cls, src: str, dst: str):
-        assert os.path.isdir(src), "Source is not a directory."
-        assert os.path.isdir(dst), "Destination is not a directory."
+        assert os.path.isdir(src), "Source is not a directory"
+        assert os.path.isdir(dst), "Destination is not a directory"
         source_files_name = [
             f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))
         ]
