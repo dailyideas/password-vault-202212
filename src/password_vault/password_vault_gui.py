@@ -495,7 +495,7 @@ class PasswordVaultGui:
             "encrypt the vault. It should be different from any other "
             "passwords you have used. If you forget this password, you will "
             "lose access to this password vault. However, you should not "
-            "written this password down, or disclose it to anyone."
+            "write this password down, or disclose it to anyone."
         )
 
     def _ask_main_password_state_stay_callback(self) -> FsmState:
