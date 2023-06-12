@@ -17,6 +17,8 @@ This password vault utilizes the `ChaCha20` module provided by [PyCryptodome](ht
 ## Run the app via source code
 1. Ensure Python with version >= 3.10 installed.
 1. Clone this repository to the target directory.
+1. Create and activate Python venv.
+1. Install dependencies by `pip install .`.
 1. At the project directory, run `python src\main_gui.py`.
 
 ## Run the app via executable
