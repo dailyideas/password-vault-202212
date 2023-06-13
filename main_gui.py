@@ -12,5 +12,7 @@ if __name__ == "__main__":
         level=logging.DEBUG if os.environ.get("DEBUG") else logging.INFO,
     )
 
-    password_vault = PasswordVaultGui()
+    password_vault = PasswordVaultGui(
+        password_vault_directory=os.path.dirname(__file__)
+    )
     password_vault.loop()

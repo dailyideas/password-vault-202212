@@ -45,15 +45,20 @@ class PasswordVaultGui:
     ACCOUNT_NAMES_VIEW_N_CANDIDATES = 64
     MAX_IDLING_TIME = 300
 
-    def __init__(self):
+    def __init__(self, password_vault_directory: str):
         self._metadata_file_path: str = os.path.join(
-            self.CACHES_DIRECTORY, self.METADATA_FILE_NAME
+            password_vault_directory,
+            self.CACHES_DIRECTORY,
+            self.METADATA_FILE_NAME,
         )
         self._metadata: dict = {}
         self._intra_state_variables: dict = {}
         self._inter_state_variables: dict = {}
 
-        os.makedirs(self.CACHES_DIRECTORY, exist_ok=True)
+        os.makedirs(
+            os.path.join(password_vault_directory, self.CACHES_DIRECTORY),
+            exist_ok=True,
+        )
 
         self._is_fsm_ready: bool = False
         self._init_fsm()
